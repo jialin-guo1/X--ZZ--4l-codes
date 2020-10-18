@@ -12,7 +12,7 @@ cmsenv
 
 git cms-init
 
-git clone -b 102_18 https://github.com/VBF-HZZ/UFHZZAnalysisRun2.git
+git clone https://github.com/jialin-guo1/X--ZZ--4l-codes.git
 
 cp UFHZZAnalysisRun2/install*.sh .
 
