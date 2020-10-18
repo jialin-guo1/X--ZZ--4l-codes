@@ -1,7 +1,7 @@
 import cjson
 import json
 from WMCore.Configuration import Configuration
-from CRABClient.UserUtilities import config, getUsernameFromSiteDB
+from CRABClient.UserUtilities import config, getUsernameFromCRIC
 
 config = Configuration()
 
@@ -52,11 +52,11 @@ else:
   else: config.Data.unitsPerJob = 5
 
 config.Data.publication = False
-config.Data.outLFNDirBase = '/store/user/%s/2018data/UFHZZAnalysisRun2/JOBTAG/' % (getUsernameFromSiteDB())
+config.Data.outLFNDirBase = '/store/user/%s/2018data/UFHZZAnalysisRun2/JOBTAG/' % (getUsernameFromCRIC())
 config.Data.ignoreLocality = True
 config.Data.allowNonValidInputDataset = True
 
 config.section_('User')
 config.section_('Site')
-config.Site.storageSite = 'T2_US_Florida'
+config.Site.storageSite = 'T2_CN_Beijing'
 config.Site.whitelist = ['T2_US_*']

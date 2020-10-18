@@ -284,8 +284,28 @@ private:
     vector<string> lep_filtersMatched; // for each lepton, all filters it is matched to
     int nisoleptons;
     double muRho, elRho, rhoSUS;
-
-    // tau variables
+	
+	vector<double> ele_ecaltrkEnergyprecorr; vector<double> ele_ecaltrkEnergyErrprecorr;
+	vector<double> ele_ecaltrkEnergypostcorr; vector<double> ele_ecaltrkEnergyErrpostcorr;
+	vector<double> ele_scalevalue; vector<double> ele_smearvalue;
+	vector<double> ele_scaleup; vector<double> ele_scaledn;
+	vector<double> ele_scalestatup; vector<double> ele_scalestatdn;
+	vector<double> ele_scalesystup; vector<double> ele_scalesystdn;
+	vector<double> ele_scalegainup; vector<double> ele_scalegaindn;
+	vector<double> ele_smearup; vector<double> ele_smeardn;
+	vector<double> ele_smearRhoup; vector<double> ele_smearRhodn;
+	vector<double> ele_smearPhiup; vector<double> ele_smearPhidn;
+	
+	vector<double> ele_ecalEnergyprecorr; vector<double> ele_ecalEnergypostcorr;
+	vector<double> ele_scaleupecalonly; vector<double> ele_scalednecalonly;
+	
+	vector<double> ele_uncorrpt; vector<double> ele_uncorrmass;
+	
+	vector<double> ele_r9; vector<double> ele_r9_vm;
+	vector<double> ele_gain; vector<double> ele_gain_vm;
+	vector<double> ele_scabseta; vector<double> ele_scabseta_vm;
+    
+	// tau variables
     vector<int> tau_id;
     vector<double> tau_pt, tau_eta, tau_phi, tau_mass;
 
@@ -574,6 +594,10 @@ private:
     edm::EDGetTokenT<HTXS::HiggsClassification> htxsSrc_;
     //edm::EDGetTokenT<HZZFid::FiducialSummary> fidRivetSrc_;
     edm::EDGetTokenT< double > prefweight_token_;
+	
+	//
+//	edm::EDGetTokenT<EcalRecHitCollection> recHitCollectionEBToken_;
+//	edm::EDGetTokenT<EcalRecHitCollection> recHitCollectionEEToken_;
 
     // Configuration
     const float Zmass;
@@ -708,6 +732,8 @@ UFHZZ4LAna::UFHZZ4LAna(const edm::ParameterSet& iConfig) :
     skimTightLeptons(iConfig.getUntrackedParameter<int>("skimTightLeptons",2)),    
     verbose(iConfig.getUntrackedParameter<bool>("verbose",false)),
     year(iConfig.getUntrackedParameter<int>("year",2018))////for year put 2016,2017, or 2018 to select correct training
+//    recHitCollectionEBToken_(consumes<EcalRecHitCollection>(iConfig.getUntrackedParameter<edm::InputTag>("recHitCollectionEB"))),
+//    recHitCollectionEEToken_(consumes<EcalRecHitCollection>(iConfig.getUntrackedParameter<edm::InputTag>("recHitCollectionEE"))),
 
 {
   
@@ -961,6 +987,12 @@ UFHZZ4LAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     edm::Handle<LHEEventProduct> lheInfo;
     iEvent.getByToken(lheInfoSrc_, lheInfo);
+	
+//	edm::Handle<EcalRecHitCollection> recHitCollectionEBHandle;
+//	iEvent.getByToken(recHitCollectionEBToken_, recHitCollectionEBHandle);
+	
+//	edm::Handle<EcalRecHitCollection> recHitCollectionEEHandle;
+//	iEvent.getByToken(recHitCollectionEEToken_, recHitCollectionEEHandle);
 
     // STXS info    
     if (isMC) {
@@ -1042,6 +1074,25 @@ UFHZZ4LAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     lep_missingHits.clear();
     lep_filtersMatched.clear();    
     nisoleptons=0;
+	
+	ele_ecaltrkEnergyprecorr.clear(); ele_ecaltrkEnergyErrprecorr.clear();
+	ele_ecaltrkEnergypostcorr.clear(); ele_ecaltrkEnergyErrpostcorr.clear();
+	ele_scalevalue.clear(); ele_smearvalue.clear();
+	ele_scaleup.clear(); ele_scaledn.clear();
+	ele_scalestatup.clear(); ele_scalestatdn.clear();
+	ele_scalesystup.clear(); ele_scalesystdn.clear();
+	ele_scalegainup.clear(); ele_scalegaindn.clear();
+	ele_smearup.clear(); ele_smeardn.clear();
+	ele_smearRhoup.clear(); ele_smearRhodn.clear();
+	ele_smearPhiup.clear(); ele_smearPhidn.clear();
+	
+	ele_ecalEnergyprecorr.clear(); ele_ecalEnergypostcorr.clear();
+	ele_scaleupecalonly.clear(); ele_scalednecalonly.clear();
+	
+	ele_uncorrpt.clear(); ele_uncorrmass.clear();
+	
+	ele_r9.clear(); ele_gain.clear(); ele_scabseta.clear();
+	ele_r9_vm.clear(); ele_gain_vm.clear(); ele_scabseta_vm.clear();
 
     //tau variables
     tau_id.clear(); tau_pt.clear(); tau_eta.clear(); tau_phi.clear(); tau_mass.clear(); 
@@ -1513,6 +1564,54 @@ UFHZZ4LAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 if (verbose) cout<<"sorted lepton "<<i<<" pt "<<lep_ptreco[i]<<" id "<<lep_ptid[i]<<" index "<<lep_ptindex[i]<<endl;
                 
                 if (abs(lep_ptid[i])==11) {
+					
+					ele_uncorrpt.push_back(recoElectronsUnS[lep_ptindex[i]].pt());
+					ele_uncorrmass.push_back(recoElectronsUnS[lep_ptindex[i]].mass());
+					
+					ele_ecaltrkEnergyprecorr.push_back(recoElectrons[lep_ptindex[i]].userFloat("ecalTrkEnergyPreCorr"));
+					ele_ecaltrkEnergyErrprecorr.push_back(recoElectrons[lep_ptindex[i]].userFloat("ecalTrkEnergyErrPreCorr"));
+					ele_ecaltrkEnergypostcorr.push_back(recoElectrons[lep_ptindex[i]].userFloat("ecalTrkEnergyPostCorr"));
+					ele_ecaltrkEnergyErrpostcorr.push_back(recoElectrons[lep_ptindex[i]].userFloat("ecalTrkEnergyErrPostCorr"));
+					ele_scalevalue.push_back(recoElectrons[lep_ptindex[i]].userFloat("energyScaleValue"));
+					ele_smearvalue.push_back(recoElectrons[lep_ptindex[i]].userFloat("energySigmaValue"));
+					ele_scaleup.push_back(recoElectrons[lep_ptindex[i]].userFloat("energyScaleUp"));
+					ele_scaledn.push_back(recoElectrons[lep_ptindex[i]].userFloat("energyScaleDown"));
+					ele_scalestatup.push_back(recoElectrons[lep_ptindex[i]].userFloat("energyScaleStatUp"));
+					ele_scalestatdn.push_back(recoElectrons[lep_ptindex[i]].userFloat("energyScaleStatDown"));
+					ele_scalesystup.push_back(recoElectrons[lep_ptindex[i]].userFloat("energyScaleSystUp"));
+					ele_scalesystdn.push_back(recoElectrons[lep_ptindex[i]].userFloat("energyScaleSystDown"));
+					ele_scalegainup.push_back(recoElectrons[lep_ptindex[i]].userFloat("energyScaleGainUp"));
+					ele_scalegaindn.push_back(recoElectrons[lep_ptindex[i]].userFloat("energyScaleGainDown"));
+					ele_smearup.push_back(recoElectrons[lep_ptindex[i]].userFloat("energySigmaUp"));
+					ele_smeardn.push_back(recoElectrons[lep_ptindex[i]].userFloat("energySigmaDown"));
+					ele_smearRhoup.push_back(recoElectrons[lep_ptindex[i]].userFloat("energySigmaRhoUp"));
+					ele_smearRhodn.push_back(recoElectrons[lep_ptindex[i]].userFloat("energySigmaRhoDown"));
+					ele_smearPhiup.push_back(recoElectrons[lep_ptindex[i]].userFloat("energySigmaPhiUp"));
+					ele_smearPhidn.push_back(recoElectrons[lep_ptindex[i]].userFloat("energySigmaPhiDown"));
+					
+					ele_ecalEnergyprecorr.push_back(recoElectrons[lep_ptindex[i]].userFloat("ecalEnergyPreCorr"));
+					ele_ecalEnergypostcorr.push_back(recoElectrons[lep_ptindex[i]].userFloat("ecalEnergyPostCorr"));
+					ele_scaleupecalonly.push_back(recoElectrons[lep_ptindex[i]].userFloat("scaleupecalonly"));
+					ele_scalednecalonly.push_back(recoElectrons[lep_ptindex[i]].userFloat("scalednecalonly"));
+					
+					ele_r9_vm.push_back(recoElectrons[lep_ptindex[i]].userFloat("r9"));
+					ele_gain_vm.push_back(recoElectrons[lep_ptindex[i]].userFloat("gainseed"));
+					ele_scabseta_vm.push_back(recoElectrons[lep_ptindex[i]].userFloat("scabseta"));
+					
+					ele_r9.push_back(recoElectrons[lep_ptindex[i]].full5x5_r9());
+					ele_scabseta.push_back(std::abs(recoElectrons[lep_ptindex[i]].superCluster()->eta()));
+					
+//					const EcalRecHitCollection* recHits = recoElectrons[lep_ptindex[i]].isEB() ? recHitCollectionEBHandle.product() : recHitCollectionEEHandle.product();
+//					const DetId seedDetId = recoElectrons[lep_ptindex[i]].superCluster()->seed()->seed();
+//					EcalRecHitCollection::const_iterator seedRecHit = recHits->find(seedDetId);
+//					unsigned int gainSeedSC = 12;
+//					if (seedRecHit != recHits->end()) { 
+//						if(seedRecHit->checkFlag(EcalRecHit::kHasSwitchToGain6)) gainSeedSC = 6;
+//						if(seedRecHit->checkFlag(EcalRecHit::kHasSwitchToGain1)) gainSeedSC = 1;
+//					}
+//					delete recHits;
+//					ele_gain.push_back(gainSeedSC);
+					
                     lep_id.push_back(recoElectrons[lep_ptindex[i]].pdgId());
                     lep_pt.push_back(recoElectrons[lep_ptindex[i]].pt());
                     lep_pterrold.push_back(recoElectrons[lep_ptindex[i]].p4Error(reco::GsfElectron::P4_COMBINATION));
@@ -3510,6 +3609,45 @@ void UFHZZ4LAna::bookPassedEventTree(TString treeName, TTree *tree)
     tree->Branch("pho_phi",&pho_phi_float);
     tree->Branch("photonCutBasedIDLoose",&photonCutBasedIDLoose_float);
 
+	tree->Branch("ele_ecaltrkEnergyprecorr",&ele_ecaltrkEnergyprecorr);
+	tree->Branch("ele_ecaltrkEnergyErrprecorr",&ele_ecaltrkEnergyErrprecorr);
+	tree->Branch("ele_ecaltrkEnergypostcorr",&ele_ecaltrkEnergypostcorr);
+	tree->Branch("ele_ecaltrkEnergyErrpostcorr",&ele_ecaltrkEnergyErrpostcorr);
+	tree->Branch("ele_scalevalue",&ele_scalevalue);
+	tree->Branch("ele_smearvalue",&ele_smearvalue);
+	tree->Branch("ele_scaleup",&ele_scaleup);
+	tree->Branch("ele_scaledn",&ele_scaledn);
+	tree->Branch("ele_scalestatup",&ele_scalestatup);
+	tree->Branch("ele_scalestatdn",&ele_scalestatdn);
+	tree->Branch("ele_scalesystup",&ele_scalesystup);
+	tree->Branch("ele_scalesystdn",&ele_scalesystdn);
+	tree->Branch("ele_scalegainup",&ele_scalegainup);
+	tree->Branch("ele_scalegaindn",&ele_scalegaindn);
+	
+	tree->Branch("ele_scaleupecalonly",&ele_scaleupecalonly);
+	tree->Branch("ele_scalednecalonly",&ele_scalednecalonly);
+	
+	tree->Branch("ele_smearup",&ele_smearup);
+	tree->Branch("ele_smeardn",&ele_smeardn);
+	tree->Branch("ele_smearRhoup",&ele_smearRhoup);
+	tree->Branch("ele_smearRhodn",&ele_smearRhodn);
+	tree->Branch("ele_smearPhiup",&ele_smearPhiup);
+	tree->Branch("ele_smearPhidn",&ele_smearPhidn);
+	
+	tree->Branch("ele_ecalEnergyprecorr",&ele_ecalEnergyprecorr);
+	tree->Branch("ele_ecalEnergypostcorr",&ele_ecalEnergypostcorr);
+	
+	tree->Branch("ele_uncorrpt",&ele_uncorrpt);
+	tree->Branch("ele_uncorrmass",&ele_uncorrmass);
+	
+	tree->Branch("ele_r9",&ele_r9);
+	tree->Branch("ele_scabseta",&ele_scabseta);
+	tree->Branch("ele_gain",&ele_gain);
+	
+	tree->Branch("ele_r9_vm",&ele_r9_vm);
+	tree->Branch("ele_gain_vm",&ele_gain_vm);
+	tree->Branch("ele_scabseta_vm",&ele_scabseta_vm);
+	
     //Higgs Candidate Variables
     tree->Branch("H_pt",&H_pt_float);
     tree->Branch("H_eta",&H_eta_float);
